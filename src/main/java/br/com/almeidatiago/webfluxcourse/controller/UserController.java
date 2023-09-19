@@ -1,5 +1,6 @@
 package br.com.almeidatiago.webfluxcourse.controller;
 
+import br.com.almeidatiago.webfluxcourse.model.request.UserRequest;
 import br.com.almeidatiago.webfluxcourse.model.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
