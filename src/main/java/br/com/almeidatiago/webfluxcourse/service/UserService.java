@@ -20,4 +20,8 @@ public class UserService {
         return repository.save(mapper.toEntity(request));
     }
 
+    public Mono<UserEntity> findById(final String id) {
+        return repository.findById(id);
+    }
+
 }

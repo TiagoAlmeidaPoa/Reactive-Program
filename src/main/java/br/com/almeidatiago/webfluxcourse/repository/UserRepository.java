@@ -16,4 +16,7 @@ public class UserRepository {
         return mongoTemplate.save(user);
     }
 
+    public Mono<UserEntity> findById(String id) {
+        return mongoTemplate.findById(id, UserEntity.class);
+    }
 }
