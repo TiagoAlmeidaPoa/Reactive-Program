@@ -5,9 +5,12 @@ import br.com.almeidatiago.webfluxcourse.mapper.UserMapper;
 import br.com.almeidatiago.webfluxcourse.model.request.UserRequest;
 import br.com.almeidatiago.webfluxcourse.model.response.UserResponse;
 import br.com.almeidatiago.webfluxcourse.repository.UserRepository;
+import br.com.almeidatiago.webfluxcourse.service.exception.ObjectNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import static java.lang.String.format;
 
 @Service
 @AllArgsConstructor
@@ -21,7 +24,12 @@ public class UserService {
     }
 
     public Mono<UserEntity> findById(final String id) {
-        return repository.findById(id);
+        return repository.findById(id)
+            .switchIfEmpty(Mono.error(
+                new ObjectNotFoundException(
+                    format("Object not found. Id: %s, Type: %s", id, UserEntity.class.getSimpleName())
+                )
+            ));
     }
 
 }
