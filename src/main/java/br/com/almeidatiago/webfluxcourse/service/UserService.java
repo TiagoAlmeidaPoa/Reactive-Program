@@ -8,6 +8,7 @@ import br.com.almeidatiago.webfluxcourse.repository.UserRepository;
 import br.com.almeidatiago.webfluxcourse.service.exception.ObjectNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static java.lang.String.format;
@@ -30,6 +31,10 @@ public class UserService {
                     format("Object not found. Id: %s, Type: %s", id, UserEntity.class.getSimpleName())
                 )
             ));
+    }
+
+    public Flux<UserEntity> findAll() {
+        return repository.findAll();
     }
 
 }
