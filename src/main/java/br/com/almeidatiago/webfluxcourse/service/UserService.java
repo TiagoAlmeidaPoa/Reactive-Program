@@ -43,4 +43,16 @@ public class UserService {
             .flatMap(repository::save);
     }
 
+    public Mono<UserEntity> delete(final String id) {
+        return handleNotFound(repository.findAndRemove(id), id);
+    }
+
+    private <T> Mono<T> handleNotFound(Mono<T> mono, String id) {
+        return mono.switchIfEmpty(Mono.error(
+            new ObjectNotFoundException(
+                format("Object not found. Id: %s, Type: %s", id, UserEntity.class.getSimpleName())
+            )
+        ));
+    }
+
 }
