@@ -15,8 +15,8 @@ import reactor.test.StepVerifier;
 
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +30,7 @@ class UserServiceTest {
     private UserService service;
 
     @Test
-    void save() {
+    void testSave() {
         UserRequest request = new UserRequest("Tiago Almeida","tiago@gmail.com","123");
         UserEntity entity = UserEntity.builder().build();
 
@@ -45,6 +45,22 @@ class UserServiceTest {
             .verify();
 
         Mockito.verify(repository, times(1)).save(any(UserEntity.class));
+
+    }
+
+    @Test
+    void testFindById() {
+
+        when(repository.findById(anyString())).thenReturn(Mono.just(UserEntity.builder().build()));
+
+        Mono<UserEntity> result = service.findById("123");
+
+        StepVerifier.create(result)
+            .expectNextMatches(user -> user.getClass() == UserEntity.class)
+            .expectComplete()
+            .verify();
+
+        Mockito.verify(repository, times(1)).findById(anyString());
 
     }
 }
