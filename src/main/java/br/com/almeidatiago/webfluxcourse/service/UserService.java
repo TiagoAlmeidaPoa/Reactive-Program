@@ -21,6 +21,7 @@ public class UserService {
     private final UserMapper mapper;
 
     public Mono<UserEntity> save(final UserRequest request) {
+
         return repository.save(mapper.toEntity(request));
     }
 
