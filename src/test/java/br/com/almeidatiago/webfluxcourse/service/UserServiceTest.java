@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
+    public static final String ID = "123";
     @Mock
     private UserRepository repository;
     @Mock
@@ -54,7 +55,7 @@ class UserServiceTest {
 
         when(repository.findById(anyString())).thenReturn(Mono.just(UserEntity.builder().build()));
 
-        Mono<UserEntity> result = service.findById("123");
+        Mono<UserEntity> result = service.findById(ID);
 
         StepVerifier.create(result)
             .expectNextMatches(user -> user.getClass() == UserEntity.class)
@@ -78,6 +79,26 @@ class UserServiceTest {
             .verify();
 
         Mockito.verify(repository, times(1)).findAll();
+
+    }
+
+    @Test
+    void testUpdate() {
+        UserRequest request = new UserRequest("Tiago Almeida","tiago@gmail.com","123");
+        UserEntity entity = UserEntity.builder().build();
+
+        when(mapper.toEntity(any(UserRequest.class),any(UserEntity.class))).thenReturn(entity);
+        when(repository.findById(anyString())).thenReturn(Mono.just(entity));
+        when(repository.save(any(UserEntity.class))).thenReturn(Mono.just(entity));
+
+        Mono<UserEntity> result = service.update(ID, request);
+
+        StepVerifier.create(result)
+            .expectNextMatches(Objects::nonNull)
+            .expectComplete()
+            .verify();
+
+        Mockito.verify(repository, times(1)).save(any(UserEntity.class));
 
     }
 }
