@@ -3,12 +3,14 @@ package br.com.almeidatiago.webfluxcourse.controller;
 import br.com.almeidatiago.webfluxcourse.entity.UserEntity;
 import br.com.almeidatiago.webfluxcourse.mapper.UserMapper;
 import br.com.almeidatiago.webfluxcourse.model.request.UserRequest;
+import br.com.almeidatiago.webfluxcourse.model.response.UserResponse;
 import br.com.almeidatiago.webfluxcourse.service.UserService;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -34,16 +36,22 @@ import static reactor.core.publisher.Mono.just;
 @AutoConfigureWebTestClient
 class UserControllerImplTest {
 
+    public static final String NAME = "Tiago";
+    public static final String ID = "1234";
+    public static final String EMAIL = "tiago@gmail.com";
+    public static final String PASSWORD = "123";
     @Autowired
     private WebTestClient webTestClient;
 
     @MockBean
     private UserService service;
+    @MockBean
+    private UserMapper mapper;
 
     @Test
     @DisplayName("Test endpoint save with success")
     void testSaveWithSuccess() {
-        final var request = new UserRequest("Tiago", "tiago@gmail.com", "123");
+        final var request = new UserRequest(NAME, EMAIL, PASSWORD);
         when(service.save(any(UserRequest.class))).thenReturn(just(UserEntity.builder().build()));
 
         webTestClient.post().uri("/users")
@@ -58,7 +66,7 @@ class UserControllerImplTest {
     @Test
     @DisplayName("Test endpoint save with success")
     void testSaveWithBadRequest() {
-        final var request = new UserRequest(" Tiago", "tiago@gmail.com", "123");
+        final var request = new UserRequest(" Tiago", EMAIL, PASSWORD);
 
         webTestClient.post().uri("/users")
             .contentType(APPLICATION_JSON)
@@ -75,7 +83,22 @@ class UserControllerImplTest {
     }
 
     @Test
-    void findById() {
+    @DisplayName("Test findById endpoint with success")
+    void testFindByIdWithSuccess() {
+        final var userResponse = new UserResponse(ID, NAME, EMAIL, PASSWORD);
+
+        when(service.findById(anyString())).thenReturn(just(UserEntity.builder().build()));
+        when(mapper.toResponse(any(UserEntity.class))).thenReturn(userResponse);
+
+        webTestClient.get().uri("/users/" + ID)
+            .accept(APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.id").isEqualTo(ID)
+            .jsonPath("$.name").isEqualTo(NAME)
+            .jsonPath("$.email").isEqualTo(EMAIL)
+            .jsonPath("$.password").isEqualTo(PASSWORD);
     }
 
     @Test
