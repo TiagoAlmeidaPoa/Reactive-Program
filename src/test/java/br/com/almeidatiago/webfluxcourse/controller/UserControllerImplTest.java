@@ -5,25 +5,16 @@ import br.com.almeidatiago.webfluxcourse.mapper.UserMapper;
 import br.com.almeidatiago.webfluxcourse.model.request.UserRequest;
 import br.com.almeidatiago.webfluxcourse.model.response.UserResponse;
 import br.com.almeidatiago.webfluxcourse.service.UserService;
-import com.mongodb.reactivestreams.client.MongoClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
-import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -40,6 +31,7 @@ class UserControllerImplTest {
     public static final String ID = "1234";
     public static final String EMAIL = "tiago@gmail.com";
     public static final String PASSWORD = "123";
+    public static final String BASE_URI = "/users";
     @Autowired
     private WebTestClient webTestClient;
 
@@ -54,7 +46,7 @@ class UserControllerImplTest {
         final var request = new UserRequest(NAME, EMAIL, PASSWORD);
         when(service.save(any(UserRequest.class))).thenReturn(just(UserEntity.builder().build()));
 
-        webTestClient.post().uri("/users")
+        webTestClient.post().uri(BASE_URI)
             .contentType(APPLICATION_JSON)
             .body(fromValue(request))
             .exchange()
@@ -64,11 +56,11 @@ class UserControllerImplTest {
     }
 
     @Test
-    @DisplayName("Test endpoint save with success")
+    @DisplayName("Test endpoint save with bad request")
     void testSaveWithBadRequest() {
-        final var request = new UserRequest(" Tiago", EMAIL, PASSWORD);
+        final var request = new UserRequest(NAME.concat(" "), EMAIL, PASSWORD);
 
-        webTestClient.post().uri("/users")
+        webTestClient.post().uri(BASE_URI)
             .contentType(APPLICATION_JSON)
             .body(fromValue(request))
             .exchange()
@@ -90,7 +82,7 @@ class UserControllerImplTest {
         when(service.findById(anyString())).thenReturn(just(UserEntity.builder().build()));
         when(mapper.toResponse(any(UserEntity.class))).thenReturn(userResponse);
 
-        webTestClient.get().uri("/users/" + ID)
+        webTestClient.get().uri(BASE_URI + "/" + ID)
             .accept(APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()
