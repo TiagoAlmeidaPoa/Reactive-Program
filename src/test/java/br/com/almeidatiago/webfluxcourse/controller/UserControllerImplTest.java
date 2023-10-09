@@ -92,6 +92,9 @@ class UserControllerImplTest {
             .jsonPath("$.name").isEqualTo(NAME)
             .jsonPath("$.email").isEqualTo(EMAIL)
             .jsonPath("$.password").isEqualTo(PASSWORD);
+
+        verify(service).findById(anyString());
+        verify(mapper).toResponse(any(UserEntity.class));
     }
 
     @Test
@@ -111,10 +114,33 @@ class UserControllerImplTest {
             .jsonPath("$.[0].name").isEqualTo(NAME)
             .jsonPath("$.[0].email").isEqualTo(EMAIL)
             .jsonPath("$.[0].password").isEqualTo(PASSWORD);
+
+        verify(service, times(1)).findAll();
+        verify(mapper).toResponse(any(UserEntity.class));
     }
 
     @Test
-    void update() {
+    @DisplayName("Test update endpoint with success")
+    void testUpdateWithSuccess() {
+        final var request = new UserRequest(NAME, EMAIL, PASSWORD);
+        final var userResponse = new UserResponse(ID, NAME, EMAIL, PASSWORD);
+
+        when(service.update(anyString(), any(UserRequest.class))).thenReturn(just(UserEntity.builder().build()));
+        when(mapper.toResponse(any(UserEntity.class))).thenReturn(userResponse);
+
+        webTestClient.patch().uri(BASE_URI + "/" + ID)
+            .contentType(APPLICATION_JSON)
+            .body(fromValue(request))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.id").isEqualTo(ID)
+            .jsonPath("$.name").isEqualTo(NAME)
+            .jsonPath("$.email").isEqualTo(EMAIL)
+            .jsonPath("$.password").isEqualTo(PASSWORD);
+
+        verify(service, times(1)).update(anyString(), any(UserRequest.class));
+        verify(mapper).toResponse(any(UserEntity.class));
     }
 
     @Test
