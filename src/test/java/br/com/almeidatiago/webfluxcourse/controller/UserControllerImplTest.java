@@ -100,6 +100,26 @@ class UserControllerImplTest {
     }
 
     @Test
+    @DisplayName("Test findById endpoint with success")
+    void testFindByIdWithNotFound() {
+
+        when(service.findById(anyString())).thenThrow(new ObjectNotFoundException(
+            format("Object not found. Id: %s, Type: %s", ID, UserEntity.class.getSimpleName())
+        ));
+
+        webTestClient.get().uri(BASE_URI + "/" + ID)
+            .accept(APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isNotFound()
+            .expectBody()
+            .jsonPath("$.error").isEqualTo("Not Found")
+            .jsonPath("$.message").isEqualTo(format("Object not found. Id: %s, Type: %s", ID, UserEntity.class.getSimpleName()))
+            .jsonPath("$.status").isEqualTo(404);
+
+        verify(service).findById(anyString());
+    }
+
+    @Test
     @DisplayName("Test findAll endpoint with success")
     void testFindAllWithSuccess() {
         final var userResponse = new UserResponse(ID, NAME, EMAIL, PASSWORD);
