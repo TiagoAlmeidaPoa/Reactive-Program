@@ -5,6 +5,7 @@ import br.com.almeidatiago.webfluxcourse.mapper.UserMapper;
 import br.com.almeidatiago.webfluxcourse.model.request.UserRequest;
 import br.com.almeidatiago.webfluxcourse.model.response.UserResponse;
 import br.com.almeidatiago.webfluxcourse.service.UserService;
+import br.com.almeidatiago.webfluxcourse.service.exception.ObjectNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 
+import static java.lang.String.format;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -151,6 +153,24 @@ class UserControllerImplTest {
         webTestClient.delete().uri(BASE_URI + "/" + ID)
             .exchange()
             .expectStatus().isOk();
+
+        verify(service).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("Test delete endpoint with NotFound exception")
+    void testDeleteWithNotFound() {
+        when(service.delete(anyString())).thenThrow(new ObjectNotFoundException(
+            format("Object not found. Id: %s, Type: %s", ID, UserEntity.class.getSimpleName())
+        ));
+
+        webTestClient.delete().uri(BASE_URI + "/" + ID)
+            .exchange()
+            .expectStatus().isNotFound()
+            .expectBody()
+            .jsonPath("$.error").isEqualTo("Not Found")
+            .jsonPath("$.message").isEqualTo(format("Object not found. Id: %s, Type: %s", ID, UserEntity.class.getSimpleName()))
+            .jsonPath("$.status").isEqualTo(404);
 
         verify(service).delete(anyString());
     }
